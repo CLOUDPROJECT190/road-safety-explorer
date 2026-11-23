@@ -39,12 +39,16 @@ analysis/reference_analysis.py   independent pandas reference for checking cloud
 api/function_app.py              HTTP endpoints, orchestrator, activities
 api/pipeline.py                  pure pipeline logic (no Azure imports)
 api/lookups/                     local authority code -> name, from the DfT data guide
-web/                             React front end (Vite)
+web/                             React front end (Vite, Tailwind CSS, shadcn/ui, Recharts, Motion)
 infra/main.bicep                 all Azure resources
 scripts/deploy.sh                one-command deploy and teardown
 scripts/benchmark.py             sequential versus parallel benchmark
 tests/test_pipeline.py           unit tests for the pipeline logic
 ```
+
+## Front end
+
+The UI is built with React, Tailwind CSS and [shadcn/ui](https://ui.shadcn.com) components (button, card, select, tabs, switch, table, badge, tooltip and chart, which wraps Recharts). The animated figures use the Number Ticker component from Magic UI, the same component listed on 21st.dev, and transitions use Motion. The visual language borrows from British road signage: sign blue, a road-marking yellow accent and the Overpass typeface, which is derived from highway sign lettering. Job status is drawn as a stretch of road with a marker that travels from Queued to Running to Complete. Every chart has a table view, and the page follows the system light or dark setting.
 
 ## API
 
@@ -118,6 +122,8 @@ FRONTEND=staticWebApp ./scripts/deploy.sh       # host the UI on Static Web Apps
 The script registers the resource providers, creates the resource group, deploys `infra/main.bicep`, publishes the function code, builds the front end against the function app URL, uploads it and smoke-tests the API. It prints the web app URL at the end.
 
 **Region and front-end hosting.** Some subscriptions restrict regions by policy. Azure for Students allowed only `polandcentral`, `austriaeast`, `denmarkeast`, `italynorth` and `norwayeast` when this was deployed (check yours with `az policy assignment list`). Static Web Apps (Free) is offered in five other regions only, so the default front-end host is a **Storage static website** in the same region as everything else: static files served from Blob Storage, with no server to manage. Set `FRONTEND=staticWebApp` where a Static Web Apps region is allowed; the React app and the API contract are identical either way.
+
+To redeploy only the front end after a UI change: `./scripts/deploy.sh --web-only`.
 
 To delete everything: `./scripts/deploy.sh --destroy`.
 

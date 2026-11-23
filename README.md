@@ -146,6 +146,8 @@ requests
 | order by executions desc
 ```
 
+Measured results from the Azure deployment are in [docs/benchmark-results.md](docs/benchmark-results.md).
+
 ### Check the cloud result against the local reference
 
 ```bash

@@ -53,7 +53,7 @@ az functionapp deployment source config-zip \
   --resource-group "$RG" --name "$FUNC_NAME" --src "$PKG" --build-remote true --output none
 
 echo "== 4/5 Front end ($FRONTEND)"
-(cd "$ROOT/web" && npm ci --no-audit --no-fund --silent && VITE_API_BASE="$FUNC_URL" npm run build --silent)
+(cd "$ROOT/web" && npm ci --include=dev --no-audit --no-fund --silent && NODE_ENV=production VITE_API_BASE="$FUNC_URL" npm run build --silent)
 if [[ "$FRONTEND" == "staticWebApp" ]]; then
   SWA_TOKEN="$(az staticwebapp secrets list --name "$SWA_NAME" --resource-group "$RG" --query properties.apiKey -o tsv)"
   npx --yes @azure/static-web-apps-cli deploy "$ROOT/web/dist" --deployment-token "$SWA_TOKEN" --env production

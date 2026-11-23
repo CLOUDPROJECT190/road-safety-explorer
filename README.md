@@ -8,7 +8,7 @@ A serverless web app on Azure. A user picks a year, runs an analysis of Great Br
 
 ```mermaid
 flowchart LR
-  user([User]) --> swa["Azure Static Web Apps<br/>React UI"]
+  user([User]) --> swa["Static front end<br/>React UI (Storage static website<br/>or Static Web Apps)"]
   swa -- "POST /api/jobs<br/>GET /api/jobs/{id}<br/>GET /api/jobs/{id}/result" --> api["Azure Functions (Flex Consumption, Python)<br/>HTTP API"]
   api -- "start / query" --> orch["Durable Functions<br/>orchestrator"]
   orch --> prep["prepare_year<br/>ingest, validate, decode, split"]
@@ -25,7 +25,7 @@ flowchart LR
 
 | Brief requirement | Where it is in this repo |
 |---|---|
-| Serverless architecture | React on Static Web Apps (`web/`), Python Azure Functions on Flex Consumption (`api/`), Blob Storage for inputs and results |
+| Serverless architecture | React front end served as static files (`web/`), Python Azure Functions on Flex Consumption (`api/`), Blob Storage for inputs and results |
 | Inter-service communication | `POST /api/jobs` returns a job ID; the UI polls `GET /api/jobs/{id}`; the API starts a Durable Functions orchestration; activities read and write blobs; `GET /api/jobs/{id}/result` returns the summary |
 | Data modelling | Collision record, summary row and job record (see [Data model](#data-model)); every job stores the dataset version it used |
 | Data pipeline | Ingest CSV, validate and decode, split into monthly files, count each partition, merge (`api/pipeline.py`) |
@@ -110,11 +110,14 @@ In Azure Cloud Shell (Bash), or any shell with `az`, `node` and `zip`, signed in
 
 ```bash
 git clone <this repo> && cd <repo>
-./scripts/deploy.sh                          # resource group rg-road-safety-explorer in uksouth
-RG=my-rg LOCATION=uksouth ./scripts/deploy.sh   # or choose your own
+./scripts/deploy.sh                             # resource group rg-road-safety-explorer in uksouth
+RG=my-rg LOCATION=norwayeast ./scripts/deploy.sh   # or choose your own
+FRONTEND=staticWebApp ./scripts/deploy.sh       # host the UI on Static Web Apps instead
 ```
 
-The script creates the resource group, deploys `infra/main.bicep`, publishes the function code, builds the front end against the function app URL, uploads it to the Static Web App and smoke-tests the API. It prints the web app URL at the end.
+The script registers the resource providers, creates the resource group, deploys `infra/main.bicep`, publishes the function code, builds the front end against the function app URL, uploads it and smoke-tests the API. It prints the web app URL at the end.
+
+**Region and front-end hosting.** Some subscriptions restrict regions by policy. Azure for Students allowed only `polandcentral`, `austriaeast`, `denmarkeast`, `italynorth` and `norwayeast` when this was deployed (check yours with `az policy assignment list`). Static Web Apps (Free) is offered in five other regions only, so the default front-end host is a **Storage static website** in the same region as everything else: static files served from Blob Storage, with no server to manage. Set `FRONTEND=staticWebApp` where a Static Web Apps region is allowed; the React app and the API contract are identical either way.
 
 To delete everything: `./scripts/deploy.sh --destroy`.
 

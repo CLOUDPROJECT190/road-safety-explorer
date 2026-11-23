@@ -1,6 +1,7 @@
 // Road Safety Explorer: all cloud resources in one resource group.
 //
-//   Static Web App (Free)        React front end
+//   Front end                    React app, hosted either as a Storage static
+//                                website (default) or on Static Web Apps (Free)
 //   Function App (Flex Consumption, Python)   HTTP API + Durable Functions workflow
 //   Storage account              input files, partitions, results, job records,
 //                                Durable task hub, deployment package
@@ -11,7 +12,11 @@
 @description('Region for the function app, storage and monitoring.')
 param location string = resourceGroup().location
 
-@description('Region for the Static Web App. The Free plan is only offered in a few regions.')
+@description('Where the React front end is hosted. Static Web Apps (Free) exists in only five regions, which subscription region policies (for example Azure for Students) may not allow; the Storage static website works in any region.')
+@allowed(['storage', 'staticWebApp'])
+param frontend string = 'storage'
+
+@description('Region for the Static Web App, when frontend is staticWebApp.')
 @allowed(['westeurope', 'eastus2', 'centralus', 'westus2', 'eastasia'])
 param staticWebAppLocation string = 'westeurope'
 
@@ -39,6 +44,8 @@ var storageName = 'strse${resourceToken}'
 var functionAppName = 'func-rse-${resourceToken}'
 var deploymentContainerName = 'app-package'
 var dataContainerName = 'roadsafety'
+var storageWebEndpoint = take(storage.properties.primaryEndpoints.web, length(storage.properties.primaryEndpoints.web) - 1)
+var webOrigin = frontend == 'staticWebApp' ? 'https://${staticWebApp!.properties.defaultHostname}' : storageWebEndpoint
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storage.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storage.listKeys().keys[0].value}'
 
 // ---------------------------------------------------------------- monitoring
@@ -89,7 +96,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 }
 
 // ------------------------------------------------------------ static web app
-resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
+resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = if (frontend == 'staticWebApp') {
   name: 'swa-rse-${resourceToken}'
   location: staticWebAppLocation
   sku: { name: 'Free', tier: 'Free' }
@@ -116,7 +123,7 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
       minTlsVersion: '1.2'
       cors: {
         allowedOrigins: [
-          'https://${staticWebApp.properties.defaultHostname}'
+          webOrigin
           'http://localhost:5173'
         ]
       }
@@ -158,7 +165,8 @@ resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
 
 output functionAppName string = functionApp.name
 output functionAppUrl string = 'https://${functionApp.properties.defaultHostName}'
-output staticWebAppName string = staticWebApp.name
-output staticWebAppUrl string = 'https://${staticWebApp.properties.defaultHostname}'
+output frontend string = frontend
+output staticWebAppName string = frontend == 'staticWebApp' ? staticWebApp!.name : ''
+output webUrl string = webOrigin
 output storageAccountName string = storage.name
 output applicationInsightsName string = appInsights.name

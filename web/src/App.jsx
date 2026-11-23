@@ -306,7 +306,7 @@ export default function App() {
       ? `${view.yearsInResult[0]} to ${view.yearsInResult[view.yearsInResult.length - 1]}`
       : String(view.yearsInResult[0])
     : "";
-  const signControl = "border-white/70 bg-white text-[#1d2327]";
+  const signControl = "border-white/70 bg-white text-[#1d2327] hover:bg-white dark:border-white/70 dark:bg-white dark:hover:bg-white [&_svg]:!text-[#56616b] [&_svg]:!opacity-100";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:py-10">
@@ -338,10 +338,10 @@ export default function App() {
               <Label className="text-white/85">How to run it</Label>
               <Tabs value={mode} onValueChange={setMode}>
                 <TabsList className="bg-white/15">
-                  <TabsTrigger value="parallel" disabled={busy} className="text-white data-[state=active]:bg-white data-[state=active]:text-[#1d2327]">
+                  <TabsTrigger value="parallel" disabled={busy} className="text-white data-[state=active]:bg-white data-[state=active]:text-[#1d2327] dark:text-white dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-white dark:data-[state=active]:text-[#1d2327]">
                     In parallel
                   </TabsTrigger>
-                  <TabsTrigger value="sequential" disabled={busy} className="text-white data-[state=active]:bg-white data-[state=active]:text-[#1d2327]">
+                  <TabsTrigger value="sequential" disabled={busy} className="text-white data-[state=active]:bg-white data-[state=active]:text-[#1d2327] dark:text-white dark:data-[state=active]:border-transparent dark:data-[state=active]:bg-white dark:data-[state=active]:text-[#1d2327]">
                     One at a time
                   </TabsTrigger>
                 </TabsList>
@@ -360,7 +360,7 @@ export default function App() {
                 {busy ? <LoaderCircle className="animate-spin" /> : <Play />}
                 {busy ? "Running" : "Run analysis"}
               </Button>
-              <Button variant="outline" onClick={() => run(["sequential", "parallel"])} disabled={busy || !years.length} className="border-white/70 bg-transparent text-white hover:bg-white/15 hover:text-white">
+              <Button variant="outline" onClick={() => run(["sequential", "parallel"])} disabled={busy || !years.length} className="border-white/70 bg-transparent text-white hover:bg-white/15 hover:text-white dark:border-white/70 dark:bg-transparent dark:hover:bg-white/15">
                 <GitCompareArrows />
                 Run comparison
               </Button>

@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "ALLOWED_YEARS": "2021,2022,2023,2024,2025",
+    "INSTANCE_MEMORY_MB": "2048"
+  },
+  "Host": { "CORS": "*" }
+}
